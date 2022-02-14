@@ -1,0 +1,85 @@
+:root {
+  --active-primary: #8a6bf6;
+  --text-color: #62768e;
+  --over-view-header: 64px;
+  --over-view-footer: 64px;
+  --height-ckeditor: 294px;
+}
+
+.min-with-128 {
+  min-width: 128px;
+}
+.margin-right-16 {
+  margin-right: 16px;
+}
+.margin-top-20 {
+  margin-top: 20px;
+}
+
+.margin-left-16 {
+  margin-left: 16px;
+}
+.margin-left-20 {
+  margin-left: 20px;
+}
+.margin-bottom-4 {
+  margin-bottom: 4px;
+}
+.margin-bottom-8 {
+  margin-bottom: 8px;
+}
+.margin-left-8 {
+  margin-left: 8px;
+}
+.margin-left-16 {
+  margin-left: 16px;
+}
+.margin-left-12 {
+  margin-left: 12px;
+}
+.margin-right-12 {
+  margin-right: 12px;
+}
+.flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.flex-algin {
+  display: flex;
+  align-items: center;
+}
+.padding-32 {
+  padding: 32px;
+}
+.padding-left-32 {
+  padding-left: 32px;
+}
+.padding-left-8 {
+  padding-left: 8px;
+}
+.padding-right-8 {
+  padding-right: 8px;
+}
+.cusor-pointer {
+  cursor: pointer;
+}
+.justify-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.spacing-16 {
+  width: 16px;
+}
+.algin-center {
+  display: flex;
+  align-items: center;
+}
+.padding-right-32 {
+  padding-right: 32px;
+}
+
+#artboard-svg {
+  fill: green;
+}

@@ -1,0 +1,44 @@
+@import url("../style/common/common.scss");
+@import url("../style/components/button.scss");
+@import url("../style/components/combobox.scss");
+@import url("../style/components/input.scss");
+@import url("//unpkg.com/element-ui@2.15.7/lib/theme-chalk/index.css");
+@import url("../style/components/ckeditor.scss");
+
+body {
+  font-family: GoogleSans-Regular, GoogleSans-Italic, GoogleSans-Bold,
+    GoogleSans-BoldItalic, GoogleSans-MediumItalic, GoogleSans-Regular,
+    sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-size: 16px;
+  color: var(--text-color);
+}
+@font-face {
+  font-family: GoogleSans-Bold;
+  src: url("../assets/font/GoogleSans/GoogleSans-Bold.woff2");
+}
+
+@font-face {
+  font-family: GoogleSans-BoldItalic;
+  src: url("../assets/font/GoogleSans/GoogleSans-BoldItalic.woff2");
+}
+
+@font-face {
+  font-family: GoogleSans-Italic;
+  src: url("../assets/font/GoogleSans/GoogleSans-Italic.woff2");
+}
+
+@font-face {
+  font-family: GoogleSans-Medium;
+  src: url("../assets/font/GoogleSans/GoogleSans-Medium.woff2");
+}
+@font-face {
+  font-family: GoogleSans-MediumItalic;
+  src: url("../assets/font/GoogleSans/GoogleSans-MediumItalic.woff2");
+}
+@font-face {
+  font-family: GoogleSans-Regular;
+  src: url("../assets/font/GoogleSans/GoogleSans-Regular.woff2");
+}

@@ -1,0 +1,26 @@
+.btn-hide {
+  background-color: "#f1f2f7";
+  border: "1px solid #a6a9be";
+  color: "var(--text-color)";
+}
+.btn-hide {
+  background-color: #f1f2f7;
+  border-radius: 10px;
+  border: 1px solid #b6b9ce;
+  width: 113px;
+  height: 40px;
+  color: #4e5b6a;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+}
+.btn-primary {
+  background-color: #8a6bf6;
+  color: #ffffff;
+  border-radius: 10px;
+  width: 114px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+}

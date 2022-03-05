@@ -1,9 +1,16 @@
 <template>
   <div class="t-input-blank">
     <div class="list-item">
-      <span class="item" v-for="(value, index) in values" :key="value">
+      <span
+        class="item"
+        v-for="(value, index) in Blanks[payload.blankId].Content"
+        :key="index"
+      >
         <span class="item-text">{{ value }}</span>
-        <i class="item-icon" @click="delValueOnClick(index)"></i>
+        <i
+          class="item-icon"
+          @click="delValueOnClick(index, payload.blankId)"
+        ></i>
       </span>
     </div>
     <input
@@ -11,33 +18,60 @@
       type="text"
       name="input-text"
       v-model="text"
-      @keydown="eventOnKeyDown($event)"
+      @keydown="eventOnKeyDown($event, payload.blankId)"
       id=""
       placeholder="Nhập đáp án rồi nhấn Enter..."
     />
+    <div class="delete" @click="delBlankOnClick(payload.blankId)">
+      <img
+        src="https://sisapapp.misacdn.net/lms/img/ic_remove.4c9d3209.svg"
+        alt=""
+      />
+    </div>
   </div>
 </template>
 <script>
+import { mapMutations, mapState } from "vuex";
 export default {
+  props: {
+    payload: Object,
+  },
+  computed: {
+    ...mapState({
+      Blanks: (state) => state.questions.FillTheBlank.Answers,
+    }),
+  },
+
   methods: {
+    ...mapMutations(["pushAnswerInBlank", "delAnswerInBlank", "deleteAnswer"]),
+
     /**
      * Thêm đáp án vào input khi người dùng nhấn enter
      * Author: NVTAM(9/2/2022)
      */
-    eventOnKeyDown(event) {
+    eventOnKeyDown(event, blankId) {
       if (event.keyCode == 13 && this.text != null) {
-        this.values.push(this.text);
+        this.pushAnswerInBlank({ blankId: blankId, text: this.text });
+        console.log(`this.blank`, this.Blanks[blankId].Content);
         this.text = null; //reset lại text input
       }
+    },
+
+    /**
+     * Xóa ô trống onclick
+     * Author: NVTAM(9/2/2022)
+     */
+    delBlankOnClick(blankId) {
+      this.deleteAnswer({ name: "FillTheBlank", id: blankId });
     },
 
     /**
      * Xóa đáp án
      * Author: NVTAM(9/2/2022)
      */
-    delValueOnClick(index) {
-      if (this.values.length != 0) {
-        this.values.splice(index, 1);
+    delValueOnClick(index, blankId) {
+      if (this.Blanks[this.payload.blankId].Content.length != 0) {
+        this.delAnswerInBlank({ blankId: blankId, textIndex: index });
       }
     },
   },
@@ -64,6 +98,14 @@ export default {
 .list-item {
   display: flex;
   align-items: center;
+}
+.delete {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  cursor: pointer;
+  height: 100%;
 }
 .item {
   display: flex;

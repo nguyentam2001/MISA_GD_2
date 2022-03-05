@@ -4,6 +4,9 @@ import grades from "./grades.js";
 import questions from "./questions.js";
 import Enum from "../script/enum.js";
 import popup from "./popup.js";
+import paging from "./paging.js";
+import axios from "axios";
+import try_exercise from "./try_exercise";
 
 Vue.use(Vuex);
 
@@ -24,285 +27,60 @@ export default new Vuex.Store({
       TrueFalse: "2",
       FillBlank: "3",
       Essay: "4",
-      AddAnswers: "5",
-      GroupQuestion: "6",
+      GroupQuestion: "5",
     },
 
-    exercises: [
-      {
-        ExerciseID: 1,
-        Title: "Bảng cửu chương",
-        GradeID: 2,
-        GradeName: "Khối 2",
-        SubjectID: 1,
-        SubjectName: "Toán",
-        Avatar: {
-          fileName: "toan.png",
-        },
-        Tags: ["a", "b"],
-        Topics: ["a", "b"],
-        Status: 0,
-        Questions: [
-          {
-            Type: 1,
-            Content: "abcdgs",
-            Attachments: [{}],
-            Answers: [
-              {
-                Content: "x",
-                Correct: false,
-                Image: {},
-              },
-              {
-                Content: "think;thinks",
-                Correct: false,
-                Image: {},
-              },
-              {
-                Content: "",
-                Correct: false,
-                Image: {},
-              },
-            ],
-            Hint: "",
-          },
-        ],
-      },
-
-      {
-        ExerciseID: "2",
-        Title: "Bài tập luyện hằng đẳng thức",
-        GradeID: 2,
-        GradeName: "Khối 2",
-        SubjectID: 1,
-        SubjectName: "Toán",
-        Avatar: {
-          fileName: "toan.png",
-        },
-        Tags: ["Bình phương tổng", "bình phương hiệu"],
-        Topics: [1, 2],
-        Status: 0, //đang lưu nháp
-        Questions: [
-          {
-            Type: 1, //Chọn đáp án đúng
-            Content: "Bình phương của một hiệu ( A - B )2 là:",
-            Attachments: [{}],
-            Answers: [
-              {
-                Content: "A2 + 2AB + B2",
-                Correct: false,
-                Image: {},
-              },
-              {
-                Content: "A2 - 2AB + B2",
-                Correct: true,
-                Image: {},
-              },
-              {
-                Content: "( A - B )( A + B )",
-                Correct: false,
-                Image: {},
-              },
-              {
-                Content: "( A - B )+( A + B )",
-                Correct: false,
-                Image: {},
-              },
-            ],
-            Hint: "Câu hỏi cấp 1",
-          },
-        ],
-      },
-      {
-        ExerciseID: "3",
-        Title: "Bài tập thì hiện tại đơn",
-        GradeID: 6,
-        GradeName: "Khối 6",
-        SubjectID: 2,
-        SubjectName: "Tiếng anh",
-        Avatar: {
-          fileName: "tienganh.png",
-        },
-        Tags: ["Ngữ pháp", "Phát âm", "Đọc", "Viết"],
-        Topics: [2, 3],
-        Status: 1, //đang lưu nháp
-        Questions: [
-          {
-            Type: 1, //Chọn đáp án đúng
-            Content: "My brother and I ... television every evening.",
-            Attachments: [{}],
-            Answers: [
-              {
-                Content: "watches",
-                Correct: false,
-                Image: {},
-              },
-              {
-                Content: "listen",
-                Correct: true,
-                Image: {},
-              },
-              {
-                Content: "Are",
-                Correct: false,
-                Image: {},
-              },
-              {
-                Content: "watch",
-                Correct: true,
-                Image: {},
-              },
-            ],
-            Hint: "Câu hỏi cấp 1",
-          },
-        ],
-      },
-      {
-        ExerciseID: "4",
-        Title: "Bài tập lịch sử việt nam",
-        GradeID: 6,
-        GradeName: "Khối 6",
-        SubjectID: 4,
-        SubjectName: "Lịch sử",
-        Avatar: {
-          fileName: "lichsu.png",
-        },
-        Tags: ["Việt Nam", "Thế giới"],
-        Topics: [5],
-        Status: 0, //đang lưu nháp
-        Questions: [
-          {
-            Type: 1, //Chọn đáp án đúng
-            Content: "Vị vua cuối cùng của chế độ phong kiến nước ta là ai:",
-            Attachments: [],
-            Answers: [
-              {
-                Content: "Khải Định",
-                Correct: false,
-                Image: {},
-              },
-              {
-                Content: "Hàm Nghi",
-                Correct: true,
-                Image: {},
-              },
-              {
-                Content: "Bảo Đại",
-                Correct: true,
-                Image: {},
-              },
-              {
-                Content: " Phong Nhã",
-                Correct: false,
-                Image: {},
-              },
-            ],
-            Hint: "Câu hỏi cấp 2",
-          },
-        ],
-      },
-    ],
+    exercises: [],
     //Môn học
-    subjects: [
-      {
-        SubjectID: 1,
-        SubjectName: "Toán",
-        SubjectCode: "TOAN",
-        SubjectImg: "toan.png",
-      },
-      {
-        SubjectID: 2,
-        SubjectName: "Tiếng anh",
-        SubjectCode: "TA",
-        SubjectImg: "tienganh.png",
-      },
-      {
-        SubjectID: 3,
-        SubjectName: "Địa lý",
-        SubjectCode: "DL",
-        SubjectImg: "diali.png",
-      },
 
-      {
-        SubjectID: 4,
-        SubjectName: "Lịch sử",
-        SubjectCode: "LS",
-        SubjectImg: "lichsu.png",
-      },
-      {
-        SubjectID: 5,
-        SubjectName: "Ngữ văn",
-        SubjectCode: "NV",
-        SubjectImg: "nguvan.png",
-      },
-      {
-        SubjectID: 6,
-        SubjectName: "Giáo dục công dân",
-        SubjectCode: "GDCD",
-        SubjectImg: "gdcd.png",
-      },
-    ],
-
-    topics: [
-      {
-        TopicId: 1,
-        TopicName: "Cộng và trừ",
-        SubjectID: 1,
-        GradeID: 2,
-      },
-      {
-        TopicId: 2,
-        TopicName: "Thì hiện tại đơn",
-        SubjectID: 2,
-        GradeID: 3,
-      },
-      {
-        TopicId: 3,
-        TopicName: "Thì hiện tại tiếp diễn",
-        SubjectID: 2,
-        GradeID: 4,
-      },
-      {
-        TopicId: 4,
-        TopicName: "Chiến tranh TG thứ nhất",
-        SubjectID: 3,
-        GradeID: 5,
-      },
-    ],
+    subjects: [],
+    topics: [],
     //đối tượng exercise
     exerciseObj: {
       Title: "",
-      ExerciseID: 10,
+      ExerciseID: "",
       Status: 0,
       Questions: [],
       SubjectID: "",
+      Tags: [],
       GradeID: "",
-      TopicID: "",
-      GradeName: "Khối 6",
-      SubjectName: "Tiếng anh",
+      Avatar: {
+        fileName: "default.png",
+      },
     },
     exerciseReset: {
       Title: "",
-      ExerciseID: 10,
+      ExerciseID: "",
       Status: 0,
+      Tags: [],
       Questions: [],
       SubjectID: "",
+      Avatar: {
+        fileName: "default.png",
+      },
       GradeID: "",
-      TopicID: "",
-      GradeName: "Khối 6",
-      SubjectName: "Tiếng anh",
     },
     //định nghĩa các giá trị lấy ra từ combobox
     SubjectID: "",
     GradeID: "",
     topic: "",
+    TopicID: "",
     exercise: "",
+    SubjectCode: "",
     //biến ẩn hiện view QuestionTypeDetail component
     isHide: true,
     //thay đổi QuestionTypeDetail component
     showQuestionType: null,
     //Hiện danh sách câu hỏi đã soạn
     showContentQuestionView: null,
+    //Hiện form nhập câu hỏi (Thêm mới, hay sửa đổi )
+    QuestionForm: Enum.typeFormQuestion.AddQuestion,
+    newExerciseID: null,
+    newQuestion: null,
+    //PageIndex
+
+    QuestionReset: null,
+    QuestionID: null,
   },
   getters: {
     grades: (state) => state.grades,
@@ -320,6 +98,13 @@ export default new Vuex.Store({
   },
 
   mutations: {
+    //Lấy Id học liệu mới
+    setExerciseID(state, payload) {
+      if (payload.ExerciseID) {
+        state.newExerciseID = payload.ExerciseID;
+      }
+    },
+
     setExercise(state, payload) {
       //dải các state cũ của Học liệu
       state.exerciseObj = { ...payload, ...state.exerciseObj };
@@ -332,8 +117,13 @@ export default new Vuex.Store({
      * Author: NVTAM(4/2/2021)
      */
     chooseValueCb(state, { value, typeCb }) {
-      if (value && typeCb) {
-        state[typeCb] = value;
+      if (typeCb == "Paging") {
+        state.paging.PageSize = value;
+      } else {
+        if (value && typeCb) {
+          console.log(value);
+          state[typeCb] = value;
+        }
       }
     },
     /**
@@ -343,7 +133,9 @@ export default new Vuex.Store({
      */
     hideFormQuestion(state) {
       state.isHide = true;
-      state.showQuestionType = null; //reset giá trị của form question là null
+      if (state.showQuestionType == Enum.stateFromQuestion.Choose) {
+        state.questions.Question = state.QuestionReset;
+      }
     },
     /**
      * Thay đổi popup kiểu câu hỏi
@@ -353,7 +145,24 @@ export default new Vuex.Store({
      */
     showFormQuestion(state, payload) {
       state.isHide = false;
-      state.showQuestionType = payload;
+      //Kiểm tra xem payload chuyền vào có phải object không
+      if (typeof payload === "object") {
+        if (payload.questionForm) {
+          //gán kiểu loại from question (thêm mới hay update)
+          state.QuestionForm = payload.questionForm;
+        } else {
+          //mặc định là thêm mới
+          state.QuestionForm = Enum.typeFormQuestion.AddQuestion;
+        }
+        state.showQuestionType = payload.questionType;
+      } else {
+        state.showQuestionType = payload;
+      }
+      //lấy copy question ở định dạng ban đầu
+      state.QuestionReset = state.questions.QuestionsTmp.find((question) => {
+        return question.Type == state.showQuestionType;
+      });
+      state.QuestionReset = JSON.parse(JSON.stringify(state.QuestionReset));
     },
     /**
      * Hiển thị màn hình chọn câu hỏi để soạn
@@ -371,16 +180,39 @@ export default new Vuex.Store({
      * Author: NVTAM (7/2/2022)
      */
     showContentListQuestion(state, payload) {
-      state.showContentQuestionView = state.stateShowQuestionView.QuestionList;
       if (payload.Type) {
         if (payload.Type == Enum.stateFromQuestion.TrueFalse) {
-          state.questions.Questions.push(state.questions.QuestionTrueFalse);
+          state.newQuestion = JSON.parse(
+            JSON.stringify(state.questions.QuestionTrueFalse)
+          );
+        } else if (payload.Type == Enum.stateFromQuestion.FillTheBlank) {
+          state.newQuestion = JSON.parse(
+            JSON.stringify(state.questions.FillTheBlank)
+          );
+        } else if (payload.Type == Enum.stateFromQuestion.Essay) {
+          state.newQuestion = JSON.parse(JSON.stringify(state.questions.Essay));
         } else {
-          //Lưu câu hỏi
-          state.questions.Questions.push(state.questions.Question);
+          //nếu không phải update thì thêm mới một câu hỏi
+          state.newQuestion = JSON.parse(
+            JSON.stringify(state.questions.Question)
+          );
         }
+        console.log(state.newQuestion);
+        //state.questions.Questions.push({ ...state.newQuestion });
       }
     },
+
+    /**
+     *reset lại form nhập câu hỏi
+     * @param {*} state
+     */
+    resetQuestion(state) {
+      console.log(state.showQuestionType);
+      if (state.showQuestionType == Enum.stateFromQuestion.Choose) {
+        state.questions.Question = state.QuestionReset;
+      }
+    },
+
     /**
      * Hoàn thành nhập học liệu
      * @param {*} state
@@ -393,8 +225,7 @@ export default new Vuex.Store({
       );
       state.exerciseObj.Questions = newQuesstion;
       // push thêm vào học liệu
-      state.exercises.push(state.exerciseObj);
-      console.log(`state.exerciseObj`, state.exerciseObj);
+      state.exercises.push({ ...state.exerciseObj });
     },
     /**
      * Reset lại đối tượng exercise
@@ -405,11 +236,203 @@ export default new Vuex.Store({
       //reset đối tượng exercise
       state.exerciseObj = { ...state.exerciseReset };
     },
+    questionFomart(state) {
+      for (const prop in state.newQuestion) {
+        if (Array.isArray(state.newQuestion[prop])) {
+          state.newQuestion[prop] = JSON.stringify(state.newQuestion[prop]);
+        }
+      }
+      //Thêm id học liệu vào question
+      state.newQuestion.ExerciseID = state.exerciseObj.ExerciseID;
+    },
+    /**
+     * parse file Avatar
+     * @param {*} state
+     * @param {*} payload
+     */
+    parseJsonAvatar(state) {
+      state.exerciseObj.Avatar = JSON.parse(state.exerciseObj.Avatar);
+    },
+
+    /**
+     * Parse Tags
+     */
+    ParseJsonTags(state) {
+      state.exerciseObj.Tags = JSON.parse(state.exerciseObj.Tags);
+    },
+
+    /**
+     * Xóa câu hỏi
+     * @param {*} payload
+     * @param {*} state
+     */
+    setFormMode(state, payload) {
+      //Kiểu action xóa
+      state.QuestionForm = payload.formMode;
+      state.QuestionID = payload.id;
+    },
+
+    /**
+     * giải mã chuỗi json cho property câu hỏi
+     * @param {*} state
+     */
+    parseAnswers(state) {
+      state.exerciseObj.questions.forEach((question, index) => {
+        if (question.Answers) {
+          //Map ping question hiện tại dưới store với dữ liệu serve
+          state.exerciseObj.questions[index].Answers = JSON.parse(
+            question.Answers
+          );
+        }
+        if (question.Attachments) {
+          state.exerciseObj.questions[index].Attachments = JSON.parse(
+            question.Attachments
+          );
+        }
+      });
+    },
   },
-  actions: {},
+  actions: {
+    loadSubjects({ state }) {
+      axios.get("https://localhost:7291/api/v1/Subjects").then((respose) => {
+        state.subjects = respose.data;
+        console.log(state.subjects);
+      });
+    },
+    //cập nhật exercise hiện tại
+    upDateExercies({ state }) {
+      axios.put("https://localhost:7291/api/v1/Subjects").then((respose) => {
+        state.subjects = respose.data;
+        console.log(state.subjects);
+      });
+    },
+
+    loadTopics({ state }) {
+      if (state.GradeID && state.SubjectID) {
+        //Lấy mã môn học
+        let subjectPick = state.subjects.find((subject) => {
+          return subject.SubjectID == state.SubjectID;
+        });
+        //lấy topic theo mã môn học
+        axios
+          .get(
+            `https://localhost:7291/api/v1/Topics/filter?GradeID=${state.GradeID}&SubjectCode=${subjectPick.SubjectCode}`
+          )
+          .then((respose) => {
+            state.topics = respose.data;
+          });
+      }
+    },
+    loadExercises({ state }, QueryText) {
+      if (!state.popup.FormDetail) {
+        //Nếu hiện form nhập liệu thì không load lại phân tìm kiếm
+        if (!QueryText) {
+          QueryText = "";
+        }
+        axios
+          .get(
+            `https://localhost:7291/api/v1/Exercises/filter?GradeID=${
+              state.GradeID || ""
+            }&TopicID=${state.TopicID || ""}&SubjectID=${
+              state.SubjectID || ""
+            }&QueryText=${QueryText}&PageIndex=${
+              state.paging.PageIndex
+            }&PageSize=${state.paging.PageSize}`
+          )
+          .then((respose) => {
+            state.paging.TotalPage = respose.data.TotalPage;
+            state.paging.TotalRecord = respose.data.TotalRecord;
+            state.exercises = respose.data.Data;
+          });
+      }
+    },
+
+    loadExerciesByID({ commit, state }, ExerciseID) {
+      axios
+        .get(`https://localhost:7291/api/v1/Exercises/${ExerciseID}`)
+        .then((respose) => {
+          state.exerciseObj = respose.data;
+          console.log("loadTags", state.exerciseObj.Tags);
+          commit("parseAnswers");
+          commit("parseJsonAvatar");
+          commit("ParseJsonTags");
+          state.questions.Questions = state.exerciseObj.questions;
+          commit("hideFormQuestion");
+        });
+    },
+    /**
+     * Xóa ExercisebyID
+     * @param {*} param0
+     */
+
+    delExerciesByID({ dispatch }, ExerciseID) {
+      axios
+        .delete(`https://localhost:7291/api/v1/Exercises/${ExerciseID}`)
+        .then(() => {
+          dispatch("loadExercises");
+        });
+    },
+
+    handleQuestion({ commit, dispatch, state }) {
+      //Thêm câu hỏi mới
+      if (state.QuestionForm == Enum.typeFormQuestion.AddQuestion) {
+        commit("questionFomart");
+
+        axios
+          .post("https://localhost:7291/api/v1/Question", state.newQuestion)
+          .then((respose) => {
+            console.log(respose);
+          })
+          .then(() => {
+            //Load lại danh sách câu hỏi by ID
+            dispatch("loadExerciesByID", state.exerciseObj.ExerciseID);
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+        //Sửa lại câu hỏi
+      } else if (state.QuestionForm == Enum.typeFormQuestion.UpDateQuestion) {
+        //fomart lại question
+        commit("questionFomart");
+        axios
+          .put("https://localhost:7291/api/v1/Question", state.newQuestion)
+          .then((respose) => {
+            console.log(respose);
+          })
+          .then(() => {
+            //Load lại danh sách câu hỏi by ID
+            dispatch("loadExerciesByID", state.exerciseObj.ExerciseID);
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      } else if (state.QuestionForm == Enum.typeFormQuestion.DeleteQuestion) {
+        console.log(state.QuestionID);
+        axios
+          .delete(`https://localhost:7291/api/v1/Question/${state.QuestionID}`)
+          .then((respose) => {
+            console.log(respose);
+          })
+          .then(() => {
+            //nếu số câu hỏi lớn hơn 1 thì load lại exercise
+            if (state.exerciseObj.QtyQuestions > 1) {
+              //Load lại danh sách câu hỏi by ID
+              dispatch("loadExerciesByID", state.exerciseObj.ExerciseID);
+            }
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      }
+      //reset lại kiểu form câu hỏi mặc định là thêm
+      state.QuestionForm = Enum.typeFormQuestion.AddQuestion;
+    },
+  },
   modules: {
     grades,
     questions,
     popup,
+    paging,
+    try_exercise,
   },
 });

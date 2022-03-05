@@ -7,19 +7,23 @@
           <ckeditor
             class="text-editer-style"
             :editor="editor"
-            v-model="editorData"
+            v-model="FillTheBlank.Content"
             :config="editorConfig"
           ></ckeditor>
-          <base-upload-mutipe-img />
+          <base-upload-mutipe-img :question="FillTheBlank" />
         </div>
       </div>
       <div class="form-footer">
         <div class="form-footer-inputs">
-          <div class="blank blank-one margin-bottom-8">
+          <div
+            class="blank blank-one margin-bottom-8"
+            v-for="(blank, index) in Blanks"
+            :key="index"
+          >
             <div class="blank-text">Ô trống 1</div>
-            <base-input-fill-blank />
+            <base-input-fill-blank :payload="{ blankId: index }" />
           </div>
-          <div class="blank blank-one margin-bottom-8">
+          <!-- <div class="blank blank-one margin-bottom-8">
             <div class="blank-text">Ô trống 2</div>
             <base-input-fill-blank />
           </div>
@@ -27,14 +31,18 @@
           <div class="blank blank-one margin-bottom-8">
             <div class="blank-text">Ô trống 3</div>
             <base-input-fill-blank />
-          </div>
+          </div> -->
         </div>
       </div>
     </div>
     <div class="group-btn margin-top-20 justify-between">
       <div class="btn-left">
         <div class="btn-with-112">
-          <base-button :styleObject="btnStyleNormal" :text="addResult" />
+          <base-button
+            :styleObject="btnStyleNormal"
+            :handleOnClick="addResultOnClick"
+            :text="addResult"
+          />
         </div>
       </div>
       <div class="btns-right flex-algin">
@@ -46,7 +54,7 @@
           />
         </div>
         <div class="btn-with-112 margin-left-8">
-          <base-button :text="save" />
+          <base-button :handleOnClick="saveAnswerOnClick" :text="save" />
         </div>
       </div>
     </div>
@@ -56,8 +64,9 @@
 import BaseButton from "../../components/BaseButton.vue";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import BaseUploadMutipeImg from "../../components/BaseUploadMutipeImg.vue";
+import Enum from "../../script/enum.js";
 import BaseInputFillBlank from "../../components/layout/question-type/BaseInputFillBlank.vue";
-import { mapMutations } from "vuex";
+import { mapActions, mapMutations, mapState } from "vuex";
 
 export default {
   components: {
@@ -65,8 +74,60 @@ export default {
     BaseUploadMutipeImg,
     BaseInputFillBlank,
   },
+  computed: {
+    ...mapState({
+      FillTheBlank: (state) => state.questions.FillTheBlank,
+      Blanks: (state) => state.questions.FillTheBlank.Answers,
+      isValid: (state) => state.questions.ruleValid.isValid,
+    }),
+    ...mapState(["showQuestionType", "exerciseObj", "QuestionForm"]),
+  },
   methods: {
-    ...mapMutations(["hideFormQuestion"]),
+    ...mapMutations([
+      "hideFormQuestion",
+      "addNewAnswer",
+      "showContentListQuestion",
+      "validateAnswer",
+      "showPopUp",
+    ]),
+    ...mapActions(["handleQuestion"]),
+    saveAnswerOnClick() {
+      //validate
+      this.validateAnswer({
+        name: "FillTheBlank",
+        type: this.showQuestionType,
+      });
+
+      if (this.isValid) {
+        //Ẩn form nhập câu hỏi
+        this.hideFormQuestion();
+        //Lưu dữ liệu sang trang cuối
+        this.showContentListQuestion({
+          Type: Enum.stateFromQuestion.FillTheBlank,
+          QuestionForm: this.QuestionForm,
+        });
+        //Lưu trữ câu hỏi
+        this.handleQuestion();
+        //Chuyển đến trang danh sách các câu hỏi
+        this.$router
+          .push({
+            path: `/question-type/${this.exerciseObj.ExerciseID}/list`,
+          })
+          .catch(() => {});
+      } else {
+        this.showPopUp();
+      }
+    },
+    /**
+     * Thêm ô trống mới
+     * Author: NVTAM (15/2/2022)
+     */
+    addResultOnClick() {
+      this.addNewAnswer({
+        name: "FillTheBlank",
+        type: Enum.stateFromQuestion.FillBlank,
+      });
+    },
   },
   data() {
     return {
@@ -89,9 +150,10 @@ export default {
       //editor
 
       editor: ClassicEditor,
-      editorData: "Nhập câu hỏi tại đây...",
+      editorData: "",
 
       editorConfig: {
+        placeholder: "Nhập câu hỏi tại đây...",
         toolbar: [
           "Bold",
           "Italic",

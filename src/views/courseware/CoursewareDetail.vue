@@ -4,7 +4,7 @@
       <el-form label-width="120px" class="demo-ruleForm">
         <div class="form-wrapper">
           <div class="form-cancel" @click="hideFromOnClick('ruleForm')"></div>
-          <div class="form-header margin-bottom-4">Thông tin bổ sung</div>
+          <div class="form-header margin-bottom-4">{{ FormName }}</div>
           <div class="form-content">
             <div class="form-left">
               <div class="avatar-title margin-bottom-4">Ảnh đại diện</div>
@@ -20,7 +20,9 @@
                   v-if="url || `../../assets/subjects-avatar/default.png`"
                   :src="
                     url ||
-                    require(`../../assets/subjects-avatar/${imagSubject}`)
+                    require(`../../assets/subjects-avatar/${
+                      exerciseObj.Avatar.fileName || 'default.png'
+                    }`)
                   "
                   alt=""
                   class="img"
@@ -39,7 +41,7 @@
                       >
                         <el-input
                           v-model="exerciseObj.Title"
-                          @input="checkErrorOnInput($event, 'Title')"
+                          @input="checkOnInput($event, 'Title')"
                         ></el-input>
                         <span class="form-label">{{
                           rules.Title.showMsg ? rules.Title.message : null
@@ -62,8 +64,8 @@
                         <el-select
                           v-model="exerciseObj.SubjectID"
                           :placeholder="subjectsTitle"
-                          @input="checkErrorOnInput($event, 'SubjectID')"
-                          @change="avatarOnChangeCb(exerciseObj.SubjectID)"
+                          @input="checkOnInput($event, 'SubjectID')"
+                          @change="handleOnChangeCb(exerciseObj.SubjectID)"
                         >
                           <el-option
                             v-for="subject in subjects"
@@ -94,7 +96,13 @@
                         <el-select
                           v-model="exerciseObj.GradeID"
                           :placeholder="gradesTitle"
-                          @input="checkErrorOnInput($event, 'GradeID')"
+                          @input="checkOnInput($event, 'GradeID')"
+                          @change="
+                            chooseValueCb({
+                              value: exerciseObj.GradeID,
+                              typeCb: 'GradeID',
+                            })
+                          "
                         >
                           <el-option
                             v-for="grade in grades.grades"
@@ -124,9 +132,9 @@
                       >
                         <el-option
                           v-for="topic in topics"
-                          :key="topic.TopicId"
+                          :key="topic.TopicID"
                           :label="topic.TopicName"
-                          :value="topic.TopicId"
+                          :value="topic.TopicID"
                         >
                         </el-option>
                       </el-select>
@@ -149,7 +157,7 @@
               </div>
 
               <el-form-item>
-                <el-input type="textarea" v-model="exerciseObj.desc"></el-input>
+                <base-mutiple-input :exercise="exerciseObj" />
               </el-form-item>
               <el-form-item>
                 <el-button class="btn-hide" @click="hideFromOnClick()"
@@ -183,9 +191,12 @@
 import resource from "../../script/resource.js";
 import custom from "../../script/custom.js";
 import Enum from "../../script/enum.js";
+import BaseMutipleInput from "../../components/BaseMutipleInput.vue";
+import axios from "axios";
 
 import { mapGetters, mapState, mapMutations } from "vuex";
 export default {
+  components: { BaseMutipleInput },
   props: {
     hideFormFormOnClick: Function,
   },
@@ -201,9 +212,26 @@ export default {
       "stateShowQuestionView",
     ]),
     ...mapState({
+      FormName: (state) => state.popup.FormName,
       isShow: (state) => state.popup.isShow,
       FormDetail: (state) => state.popup.FormDetail,
     }),
+  },
+  mounted() {
+    this.$store.dispatch("loadTopics");
+  },
+  watch: {
+    //Load lại trang web khi filter giá trị
+    GradeID() {
+      this.$store.dispatch("loadTopics");
+    },
+    SubjectID: function () {
+      this.$store.dispatch("loadTopics");
+    },
+    //reset lại url Avatar
+    imagSubject() {
+      this.url = "";
+    },
   },
 
   data() {
@@ -253,6 +281,8 @@ export default {
       "setExercise",
       "resetExcercies",
       "hideForm",
+      "chooseValueCb",
+      "setExerciseID",
     ]),
     mapingStateData() {
       //mapping khối lớp vào dữ liệu
@@ -262,17 +292,58 @@ export default {
       //mapping chủ đề vào dữ liệu
       this.topicsObject.data = this.topics;
     },
-
+    /**
+     * Chọn giá trị cb trong form nhập liệu
+     */
     submitForm() {
       //Kiểm tra validate
       let isValid = this.validateRules();
+      let me = this;
       if (isValid) {
-        this.pathQuestionType = "/question-type";
-        //Duyệt và lấy dữ liệu từng rule
-        this.setExercise(this.ruleForm);
-        console.log(`exerciseObj`, this.exerciseObj);
-        //Ẩn form
-        this.hideForm();
+        //Nếu là form thêm mới
+        if (this.FormDetail == Enum.typeForm.showDetail) {
+          //Duyệt và lấy dữ liệu từng rule
+          this.setExercise(this.ruleForm);
+          console.log(this.ruleForm);
+          //Thêm mới exercise
+          //Chuyển đổi Ảnh thành dạng json
+          this.exerciseObj.Avatar = JSON.stringify(this.exerciseObj.Avatar);
+
+          this.exerciseObj.Tags = JSON.stringify(this.exerciseObj.Tags);
+          //Chuyển đổi tag
+          axios
+            .post("https://localhost:7291/api/v1/Exercises", this.exerciseObj)
+            .then((respose) => {
+              me.setExerciseID({ ExerciseID: respose.data.id });
+              me.$router.push(`/question-type/${respose.data.id}`);
+              //Ẩn form
+              this.hideForm();
+            })
+            .catch((error) => {
+              console.log(error);
+            });
+          //Nếu là form sửa
+        } else if (this.FormDetail == Enum.typeForm.showUpDate) {
+          //Duyệt và lấy dữ liệu từng rule
+          this.setExercise(this.ruleForm);
+          // //Chuyển đổi Ảnh thành dạng json
+          this.exerciseObj.Avatar = JSON.stringify(this.exerciseObj.Avatar);
+          this.exerciseObj.Tags = JSON.stringify(this.exerciseObj.Tags);
+          console.log(this.exerciseObj.Tags);
+          axios
+            .put(
+              `https://localhost:7291/api/v1/Exercises/${this.exerciseObj.ExerciseID}`,
+              this.exerciseObj
+            )
+            .then(() => {
+              me.$router.push(`/question-type/${me.exerciseObj.ExerciseID}`);
+              //Ẩn form
+              this.hideForm();
+            })
+            .catch((error) => {
+              console.log(error);
+            });
+        }
       }
     },
 
@@ -280,7 +351,7 @@ export default {
      * Kiểm tra lỗi từng rule
      * Author: NVTAM (13/2/2021);
      */
-    checkErrorOnInput(value, typeRuler) {
+    checkOnInput(value, typeRuler) {
       if (value) {
         this.rules[typeRuler].showMsg = false;
       } else {
@@ -323,7 +394,7 @@ export default {
       const file = e.target.files[0];
       this.url = URL.createObjectURL(file);
       if (file) {
-        this.exerciseObj.Avatar = { fileName: file.name };
+        console.log("url", this.url);
       }
     },
 
@@ -331,12 +402,15 @@ export default {
       thay đổi avatar trong cb
       Author: NVTAM(4/2/2022)
      */
-    avatarOnChangeCb(value) {
+    handleOnChangeCb(value) {
+      //nếu không tải ảnh lên thì lấy ảnh mặc định
       let subjectObj = this.subjects.find((subject) => {
         return subject.SubjectID == value;
       });
       this.imagSubject = subjectObj.SubjectImg;
-      this.exerciseObj.Avatar = { fileName: this.imagSubject };
+      //Thay đổi avartar
+      this.exerciseObj.Avatar.fileName = this.imagSubject;
+      this.chooseValueCb({ value: value, typeCb: "SubjectID" });
     },
   },
   created() {
@@ -374,12 +448,12 @@ export default {
 }
 ::v-deep .form-wrapper {
   position: relative;
-  padding: 16px 24px;
+  padding: 16px 24px 1px 24px;
   background-color: #ffffff;
   border-radius: 10px;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.16);
   width: 801px;
-  height: 541px;
+
   overflow: hidden;
 }
 ::v-deep .el-form-item__content {

@@ -11,14 +11,19 @@
           ></ckeditor>
           <div class="add-image-list">
             <div
-              v-for="(image, index) in images"
+              v-for="(image, index) in QuestionTrueFalse.Attachments"
               :key="index"
               class="image-attach"
             >
               <div class="del-img" @click="deleteImgOnclick(index)">
                 <i class="fas fa-times-circle"></i>
               </div>
-              <img v-if="image" :src="image" alt="" class="img" />
+              <img
+                v-if="image"
+                :src="require(`../../assets/subjects-avatar/${image}`)"
+                alt=""
+                class="img"
+              />
             </div>
             <div class="uplaod-img-btn">
               <input
@@ -71,7 +76,7 @@ import BaseButton from "../../components/BaseButton.vue";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import Enum from "../../script/enum.js";
 import BaseCardTrueFalse from "../../components/layout/question-type/BaseCardTrueFalse.vue";
-import { mapMutations, mapState } from "vuex";
+import { mapActions, mapMutations, mapState } from "vuex";
 
 export default {
   components: {
@@ -83,9 +88,10 @@ export default {
       QuestionTrueFalse: (state) => state.questions.QuestionTrueFalse,
       isValid: (state) => state.questions.ruleValid.isValid,
     }),
-    ...mapState(["showQuestionType"]),
+    ...mapState(["showQuestionType", "exerciseObj", "QuestionForm"]),
   },
   methods: {
+    ...mapActions(["handleQuestion"]),
     ...mapMutations([
       "hideFormQuestion",
       "showContentListQuestion",
@@ -99,16 +105,15 @@ export default {
     attachImageOnclick(e) {
       const file = e.target.files[0];
       this.imageAttach = URL.createObjectURL(file);
-      console.log(file.name);
-      this.images.push(this.imageAttach);
-      console.log(` this.images`, this.images);
+      //Thêm ảnh vào phần câu hỏi
+      this.QuestionTrueFalse.Attachments.push(file.name);
     },
     /**
     Xóa file ảnh đính kèm
     Author:NVTAM (7/2/2021)
      */
     deleteImgOnclick(index) {
-      this.images.splice(index, 1);
+      this.QuestionTrueFalse.Attachments.splice(index, 1);
     },
     /**
      * Lưu trữ dữ liệu câu trả lời
@@ -124,7 +129,18 @@ export default {
         //Ẩn form nhập câu hỏi
         this.hideFormQuestion();
         //Lưu dữ liệu sang trang cuối
-        this.showContentListQuestion(this.payLoad);
+        this.showContentListQuestion({
+          Type: Enum.stateFromQuestion.TrueFalse,
+          QuestionForm: this.QuestionForm,
+        });
+        //Lưu trữ câu hỏi
+        this.handleQuestion();
+        //Chuyển đến trang danh sách các câu hỏi
+        this.$router
+          .push({
+            path: `/question-type/${this.exerciseObj.ExerciseID}/list`,
+          })
+          .catch(() => {});
       } else {
         this.showPopUp();
       }
@@ -156,6 +172,7 @@ export default {
       editorData: "Nhập câu hỏi tại đây...",
 
       editorConfig: {
+        placeholder: "Nhập câu hỏi tại đây...",
         toolbar: [
           "Bold",
           "Italic",
@@ -174,7 +191,6 @@ export default {
 
       answers: ["Đúng", "Sai"],
       imageAttach: "",
-      images: [],
     };
   },
 };

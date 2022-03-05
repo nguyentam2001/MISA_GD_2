@@ -19,10 +19,22 @@
         <div
           class="content-item"
           v-for="(question, index) in Questions"
-          :key="index"
+          :key="question.QuestionID"
         >
           <div class="item-header">
-            {{ question.Content }}
+            <div class="flex">
+              <span class="question-index">Câu {{ index + 1 }}:</span>
+              <span class="margin-left-8" v-html="question.Content"></span>
+            </div>
+
+            <div>
+              <img
+                v-for="(attachment, index) in question.Attachments"
+                :key="index"
+                class="question-img"
+                :src="require(`../../../assets/subjects-avatar/${attachment}`)"
+              />
+            </div>
           </div>
           <div class="item-answer">
             <div
@@ -31,23 +43,38 @@
               :key="index"
             >
               <div class="icons" v-bind:class="{ correct: answer.Correct }">
-                {{ convertOrder(index) }}
+                {{
+                  question.type != FillTheBlankType
+                    ? index + 1
+                    : convertOrder(index)
+                }}
               </div>
-              <div class="text">{{ answer.Content }}</div>
+              <div class="text">{{ AnswerContents(answer.Content) }}</div>
             </div>
           </div>
           <div class="content-footer">
+            <div class="question-hint" v-if="question.Hint">
+              <div class="title">
+                Lời giải:
+                <span class="text-hint">{{ question.Hint }}</span>
+              </div>
+            </div>
             <div class="footer-right">
               <div class="btn-update margin-left-12">
-                <base-button
-                  :text="text"
-                  :handleOnClick="updateQuestion"
-                  :payload="{ id: index, type: question.Type }"
-                  :styleObject="btnStyleNormal"
-                />
+                <el-button
+                  class="t-btn btnStyleNormal"
+                  @click="updateQuestionOnClick(index, question.Type)"
+                  >Chỉnh sửa</el-button
+                >
               </div>
-              <div class="btn-link margin-left-12"></div>
-              <div class="btn-delete margin-left-12"></div>
+              <div
+                class="btn-link margin-left-12"
+                @click="replicationQuestion(index, question.Type)"
+              ></div>
+              <div
+                class="btn-delete margin-left-12"
+                @click="deleteQuestionOnClick(question.QuestionID)"
+              ></div>
             </div>
           </div>
         </div>
@@ -68,38 +95,89 @@
   </div>
 </template>
 <script>
-import { mapGetters, mapMutations, mapState } from "vuex";
-import BaseButton from "../../BaseButton.vue";
+import { mapActions, mapGetters, mapMutations, mapState } from "vuex";
+import Enum from "../../../script/enum.js";
 import BaseTooltip from "../../BaseTooltip.vue";
 import CoursewareDetail from "../../../views/courseware/CoursewareDetail.vue";
 import QuestionTypeDetail from "../../../views/question-type/QuestionTypeDetail.vue";
 
 export default {
   components: {
-    BaseButton,
     BaseTooltip,
     QuestionTypeDetail,
     CoursewareDetail,
   },
+
   methods: {
-    ...mapMutations(["showFormQuestion", "updateQuestion"]),
+    ...mapMutations(["showFormQuestion", "bindQuestion", "setFormMode"]),
+    ...mapActions(["handleQuestion"]),
+    /**
+     *
+     */
+    AnswerContents(value) {
+      if (Array.isArray(value)) {
+        return value.join(" / ");
+      } else {
+        return value;
+      }
+    },
+    /**
+     * Sửa đổi câu hỏi
+     * Author: NVTAM (14/2/2022)
+     */
+    updateQuestionOnClick(index, questionType) {
+      //Hiện form nhập câu hỏi tương dứng
+      this.showFormQuestion({
+        questionForm: Enum.typeFormQuestion.UpDateQuestion, //form ở trạng thái update
+        questionType: questionType + "",
+      });
+      //bind dữ liệu câu hỏi vào form
+      this.bindQuestion({ id: index, type: questionType + "" });
+    },
+    /**
+     * Nhân bản câu hỏi giống update và thêm mới
+     * index là index của câu hỏi
+     * questionType là kiểu câu hỏi
+     * Author:  NVTAM (14/2/2022)
+     */
+
+    replicationQuestion(index, questionType) {
+      //Hiện form nhập câu hỏi tương dứng
+      this.showFormQuestion({
+        questionForm: Enum.typeFormQuestion.AddQuestion, //form ở trạng thái thêm mới
+        questionType: questionType + "",
+      });
+      //bind dữ liệu câu hỏi vào form
+      this.bindQuestion({ id: index, type: questionType + "" });
+    },
+
+    deleteQuestionOnClick(questionID) {
+      this.setFormMode({
+        formMode: Enum.typeFormQuestion.DeleteQuestion,
+        id: questionID,
+      });
+
+      //Gửi request xóa
+      this.handleQuestion();
+      if (this.exerciseObj.QtyQuestions <= 1) {
+        this.$router.replace({ path: "/" });
+      }
+    },
+  },
+  mounted() {
+    this.$store.dispatch("loadExerciesByID", this.$route.params.id);
   },
   computed: {
     ...mapState({
-      Questions: (state) => state.questions.Questions,
+      Questions: (state) => state.exerciseObj.questions,
     }),
+    ...mapState(["exerciseObj"]),
 
     ...mapGetters(["convertOrder"]),
   },
   data() {
     return {
-      btnStyleNormal: {
-        backgroundColor: "#f1f2f7",
-        border: "1px solid #a6a9be",
-        color: "var(--text-color)",
-        padding: "0px",
-      },
-      text: "Chỉnh sửa",
+      FillTheBlankType: Enum.stateFromQuestion.FillBlank,
       questions: [
         {
           type: "1",
@@ -161,9 +239,12 @@ export default {
       border-radius: 6px;
       border-top: 8px solid #00a9ec;
       box-shadow: 0 0 20px rgba(0, 0, 0, 0.16);
-      height: 192px;
+
       margin-top: 16px;
       overflow: hidden;
+      .question-index {
+        font-weight: 600;
+      }
       .item-header {
         margin-top: 28px;
         margin-left: 20px;
@@ -205,14 +286,24 @@ export default {
     }
   }
   .content-footer {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    margin-left: 20px;
-    margin-right: 20px;
+    margin: 12px 20px;
     height: 36%;
+
+    .question-hint {
+      padding-bottom: 12px;
+      border-bottom: 2px solid #d8d7d7;
+    }
+    .title {
+      font-weight: 600;
+    }
+    .text-hint {
+      font-weight: 500;
+    }
+
     .footer-right {
       display: flex;
+      justify-content: flex-end;
+      margin-top: 12px;
       .btn-link {
         cursor: pointer;
         width: 40px;
@@ -223,12 +314,17 @@ export default {
       }
       .btn-delete {
         cursor: pointer;
-
         width: 40px;
         height: 40px;
         background-position: center;
         background-repeat: no-repeat;
         background-image: url("../../../assets/icons/Group_47435.svg");
+      }
+      .btnStyleNormal {
+        background-color: #f1f2f7;
+        border: 1px solid #a6a9be;
+        color: var(--text-color);
+        padding: 0px;
       }
     }
   }
@@ -236,6 +332,12 @@ export default {
     position: absolute;
     right: -96px;
     top: 0;
+  }
+  .question-img {
+    height: 140px;
+    margin: 12px 0px 0px 12px;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgb(0 0 0 / 16%);
   }
 }
 </style>

@@ -6,7 +6,7 @@
           <ckeditor
             class="text-editer-style"
             :editor="editor"
-            v-model="Question.Hint"
+            v-model="AddAnswerQuestion"
             :config="editorConfig"
           ></ckeditor>
         </div>
@@ -22,7 +22,7 @@
             />
           </div>
           <div class="btn-with-112 margin-left-8">
-            <base-button :text="save" />
+            <base-button :text="save" :handleOnClick="saveAnswerOnClick" />
           </div>
         </div>
       </div>
@@ -33,6 +33,7 @@
 import BaseButton from "../../components/BaseButton.vue";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import { mapMutations, mapState } from "vuex";
+import Enum from "../../script/enum";
 
 export default {
   components: {
@@ -41,13 +42,98 @@ export default {
   computed: {
     ...mapState({
       Question: (state) => state.questions.Question,
+      QuestionTrueFalse: (state) => state.questions.QuestionTrueFalse,
+      FillTheBlank: (state) => state.questions.FillTheBlank,
+      Essay: (state) => state.questions.Essay,
+      isValid: (state) => state.questions.ruleValid.isValid,
     }),
+    ...mapState(["showQuestionType"]),
+    AddAnswerQuestion: {
+      get: function () {
+        switch (this.showQuestionType) {
+          case "2":
+            return this.QuestionTrueFalse.Hint;
+          case "3":
+            return this.FillTheBlank.Hint;
+          case "4":
+            return this.Essay.Hint;
+          default:
+            return this.Question.Hint;
+        }
+      },
+
+      set: function (newValue) {
+        switch (this.showQuestionType) {
+          case "2":
+            this.QuestionTrueFalse.Hint = newValue;
+            break;
+          case "3":
+            this.FillTheBlank.Hint = newValue;
+            break;
+          case "4":
+            this.Essay.Hint = newValue;
+            break;
+          default:
+            this.Question.Hint = newValue;
+            break;
+        }
+      },
+    },
   },
   methods: {
-    ...mapMutations(["hideFormQuestion"]),
+    ...mapMutations([
+      "hideFormQuestion",
+      "validateAnswer",
+      "showPopUp",
+      "showContentListQuestion",
+    ]),
+    /**
+     * Lấy tên và giá trị của câu hỏi hiện tại
+     * Author: NVTam (16/2/2022)
+     */
+    getNameQuestionType() {
+      Object.keys(Enum.stateQuestionType).forEach((key) => {
+        if (Enum.stateQuestionType[key] == this.showQuestionType) {
+          this.currQuestion.type = Enum.stateQuestionType[key];
+          this.currQuestion.name = key;
+        }
+      });
+    },
+    /**
+     * Lưu trữ dữ liệu
+     * Author: NVTAM (16/2/2022)
+     */
+    saveAnswerOnClick() {
+      //Lấy tên và giá trị của câu hỏi hiện tại
+      this.getNameQuestionType();
+      //validate
+      this.validateAnswer({
+        name: this.currQuestion.name,
+        type: this.showQuestionType,
+      });
+
+      if (this.isValid) {
+        //Ẩn form nhập câu hỏi
+        this.hideFormQuestion();
+        //Lưu dữ liệu sang trang cuối
+        this.showContentListQuestion({
+          Type: this.currQuestion.type,
+          QuestionForm: Enum.typeFormQuestion.AddQuestion,
+        });
+        //Chuyển đến view danh sách các câu hỏi
+        const path = "/question-type/list";
+        if (this.$route.path !== path) this.$router.push(path);
+      } else {
+        this.showPopUp();
+      }
+    },
   },
   data() {
     return {
+      currQuestion: {
+        name: null,
+        type: null,
+      },
       btnStyleNormal: {
         backgroundColor: "#f1f2f7",
         border: "1px solid #a6a9be",
@@ -69,6 +155,7 @@ export default {
       editorData: "Nhập lời giải tại đây...",
 
       editorConfig: {
+        placeholder: "Nhập câu trả lời tại đây...",
         toolbar: [
           "Bold",
           "Italic",

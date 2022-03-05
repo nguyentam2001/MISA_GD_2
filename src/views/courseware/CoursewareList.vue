@@ -18,24 +18,21 @@
   </div>
 </template>
 <script>
-//  :quantities="exercer.Questions.length"
-//               :subject="exercer.Avatar.fileName"
-//               :title="exercer.Title"
 import BaseCard from "../../components/BaseCard.vue";
-import common from "../../script/common.js";
-import { mapGetters, mapState } from "vuex";
+import { mapState } from "vuex";
 export default {
   components: {
     BaseCard,
   },
   methods: {
-    subjectOfGrade(exercer) {
-      return common.subjectOfGrade(exercer);
-    },
+    test() {},
+  },
+  mounted() {
+    this.$store.dispatch("loadExercises");
+    console.log(`exercises`, this.exercises);
   },
   computed: {
-    ...mapState({}),
-    ...mapGetters(["exercises"]),
+    ...mapState(["exercises"]),
   },
 };
 </script>

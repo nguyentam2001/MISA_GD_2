@@ -9,12 +9,20 @@
   >
     <el-option
       v-for="item in options"
+      :key="item[propName]"
+      :label="item[label]"
+      :value="item[propName]"
+      v-bind:style="optionStyle"
+    >
+    </el-option>
+    <!-- <el-option
+      v-for="item in options"
       :key="item.value"
       :label="item.label"
       :value="item.value"
       v-bind:style="optionStyle"
     >
-    </el-option>
+    </el-option> -->
   </el-select>
 </template>
 <script>
@@ -22,10 +30,14 @@ import { mapMutations } from "vuex";
 
 export default {
   props: {
+    options: Array,
+    label: String,
+    propName: String,
     titleText: String,
     selectorStyle: Object,
     optionStyle: Object,
-    inputValue: Object,
+    PagingFirstDefault: Boolean,
+    // inputValue: Object,
     typeCb: String, //dùng enum để kiểm tra xem là form gì
     // funcMutaion:String,
   },
@@ -34,38 +46,38 @@ export default {
   //   value,
   //   name
   // }
-  created() {
-    let me = this;
-    if (me.inputValue != null) {
-      console.log(me.inputValue);
-      this.options = this.convertToCb(
-        me.inputValue.data,
-        me.inputValue.value,
-        me.inputValue.label
-      );
-    }
-  },
+  // created() {
+  //   let me = this;
+  //   if (me.inputValue != null) {
+  //     console.log(me.inputValue);
+  //     this.options = this.convertToCb(
+  //       me.inputValue.data,
+  //       me.inputValue.value,
+  //       me.inputValue.label
+  //     );
+  //   }
+  // },
   methods: {
-    convertToCb(inputValue, value, label) {
-      let newArray = [];
-      if (Array.isArray(inputValue)) {
-        for (let i = 0; i < inputValue.length; i++) {
-          let obj = {};
-          console.log(obj);
-          obj.value = inputValue[i][value];
-          obj.label = inputValue[i][label];
-          newArray.push(obj);
-        }
-      }
-      return newArray;
-    },
+    // convertToCb(inputValue, value, label) {
+    //   let newArray = [];
+    //   if (Array.isArray(inputValue)) {
+    //     for (let i = 0; i < inputValue.length; i++) {
+    //       let obj = {};
+    //       console.log(obj);
+    //       obj.value = inputValue[i][value];
+    //       obj.label = inputValue[i][label];
+    //       newArray.push(obj);
+    //     }
+    //   }
+    //   return newArray;
+    // },
 
     ...mapMutations(["chooseValueCb"]),
   },
 
   data() {
     return {
-      options: [],
+      // options: [],
       value: "",
     };
   },

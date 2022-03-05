@@ -10,10 +10,10 @@
           <ckeditor
             class="text-editer-style"
             :editor="editor"
-            v-model="Content"
+            v-model="Essay.Content"
             :config="editorConfig"
           ></ckeditor>
-          <base-upload-mutipe-img />
+          <base-upload-mutipe-img :question="Essay" />
         </div>
       </div>
     </div>
@@ -28,7 +28,7 @@
           />
         </div>
         <div class="btn-with-112 margin-left-8">
-          <base-button :text="save" />
+          <base-button :handleOnClick="saveAnswerOnClick" :text="save" />
         </div>
       </div>
     </div>
@@ -37,16 +37,56 @@
 <script>
 import BaseButton from "../../components/BaseButton.vue";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
+import Enum from "../../script/enum.js";
 import BaseUploadMutipeImg from "../../components/BaseUploadMutipeImg.vue";
-import { mapMutations } from "vuex";
+import { mapActions, mapMutations, mapState } from "vuex";
 
 export default {
   components: {
     BaseButton,
     BaseUploadMutipeImg,
   },
+  computed: {
+    ...mapState({
+      Essay: (state) => state.questions.Essay,
+      isValid: (state) => state.questions.ruleValid.isValid,
+    }),
+    ...mapState(["QuestionForm", "exerciseObj"]),
+  },
   methods: {
-    ...mapMutations(["hideFormQuestion"]),
+    ...mapMutations([
+      "hideFormQuestion",
+      "validateAnswer",
+      "showPopUp",
+      "showContentListQuestion",
+    ]),
+    ...mapActions(["handleQuestion"]),
+    saveAnswerOnClick() {
+      //validate
+      this.validateAnswer({
+        name: "Essay",
+        type: this.showQuestionType,
+      });
+      if (this.isValid) {
+        //Ẩn form nhập câu hỏi
+        this.hideFormQuestion();
+        //Lưu dữ liệu sang trang cuối
+        this.showContentListQuestion({
+          Type: Enum.stateFromQuestion.Essay,
+          QuestionForm: this.QuestionForm,
+        });
+        //Lưu trữ câu hỏi
+        this.handleQuestion();
+        //Chuyển đến trang danh sách các câu hỏi
+        this.$router
+          .push({
+            path: `/question-type/${this.exerciseObj.ExerciseID}/list`,
+          })
+          .catch(() => {});
+      } else {
+        this.showPopUp();
+      }
+    },
   },
   data() {
     return {
@@ -71,6 +111,7 @@ export default {
       Content: "Nhập câu hỏi tại đây...",
 
       editorConfig: {
+        placeholder: "Nhập câu hỏi tại đây...",
         toolbar: [
           "Bold",
           "Italic",

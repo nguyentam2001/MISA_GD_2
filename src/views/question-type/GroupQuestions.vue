@@ -74,10 +74,7 @@
           />
         </div>
         <div class="margin-left-8">
-          <base-button
-            :handleOnClick="showContentListQuestion"
-            :text="saveAdd"
-          />
+          <base-button :handleOnClick="saveAnswerOnClick" :text="saveAdd" />
         </div>
       </div>
     </div>
@@ -96,6 +93,10 @@ export default {
   },
   methods: {
     ...mapMutations(["hideFormQuestion", "showContentListQuestion"]),
+    saveAnswerOnClick() {
+      //Chuyển đến view danh sách các câu hỏi
+      this.$router.push({ path: "/question-type/list" });
+    },
   },
 
   data() {

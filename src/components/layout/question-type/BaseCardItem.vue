@@ -13,7 +13,7 @@
           </div>
         </div>
         <div class="top-right">
-          <div class="more" @click="deleteAnswer(index)">
+          <div class="more" @click="deleteAnswerOnClick(index)">
             <span class="more-del">Xóa</span>
           </div>
           <div
@@ -61,6 +61,9 @@ export default {
   },
   methods: {
     ...mapMutations(["chooseTheAnswer", "deleteAnswer"]),
+    deleteAnswerOnClick(index) {
+      this.deleteAnswer({ name: "Question", id: index });
+    },
   },
   data() {
     return {

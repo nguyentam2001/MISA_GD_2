@@ -25,5 +25,17 @@ class Common {
       return "";
     }
   }
+
+  static AddItemNotExists(a, item) {
+    var index = a.findIndex((x) => x.name == item.name);
+    if (index === -1) {
+      a.push(item);
+    } else {
+     return;
+    }
+  }
+  // check if an element exists in array using a comparer function
+// comparer : function(currentElement)
+
 }
 export default Common;

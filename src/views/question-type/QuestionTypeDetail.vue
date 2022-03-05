@@ -1,9 +1,9 @@
 <template>
   <div v-bind:class="{ 'is-hide': isHide }">
     <div class="choose-correct-answer">
-      <div class="block-left">
+      <div class="block-left" @click="returnQuestion">
         <div class="icon-top-right"></div>
-        <div class="text-left">Xem giao diện làm bài</div>
+        <div class="text-left">Quay trở lại câu hỏi</div>
         <div class="icon-center"></div>
         <div class="icon-bottom-center"></div>
       </div>
@@ -14,13 +14,18 @@
         <div class="title">
           <base-select-question />
         </div>
-        <component :is="componentActive" />
+        <div v-if="!isShowAddAnswer">
+          <component :is="componentActive" />
+        </div>
+        <div v-if="isShowAddAnswer">
+          <add-answers />
+        </div>
       </div>
       <div class="block-right">
         <div
           class="block-right-group"
-          v-if="stateFromQuestion.AddAnswers != showQuestionType"
-          @click="showFormQuestion(stateFromQuestion.AddAnswers)"
+          v-if="!isShowAddAnswer"
+          @click="showAddAnswersOnClick"
         >
           <div class="icon-top-left"></div>
           <div class="icon-center"></div>
@@ -64,8 +69,6 @@ export default {
           return FillTheBlank;
         case this.stateFromQuestion.Essay:
           return EssayQuestions;
-        case this.stateFromQuestion.AddAnswers:
-          return AddAnswers;
         case this.stateFromQuestion.GroupQuestion:
           return GroupQuestions;
         default:
@@ -78,12 +81,30 @@ export default {
       Questions: (state) => state.questions.Questions,
     }),
   },
+  watch: {
+    showQuestionType: function () {
+      this.isShowAddAnswer = false;
+    },
+  },
   created() {},
   methods: {
     ...mapMutations(["showFormQuestion"]),
+    showAddAnswersOnClick() {
+      this.isShowAddAnswer = !this.isShowAddAnswer;
+    },
+    /**
+    Quay trở lại câu hỏi
+    Author: NVTAM (16/2/2022)
+     */
+    returnQuestion() {
+      this.isShowAddAnswer = false;
+    },
   },
+
   data() {
-    return {};
+    return {
+      isShowAddAnswer: false,
+    };
   },
 };
 </script>
@@ -103,6 +124,7 @@ export default {
   background-color: #0000004d;
   .block-left {
     color: #afeca4;
+    cursor: pointer;
     border-top-right-radius: 10px;
     width: 96px;
     position: relative;

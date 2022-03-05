@@ -5,7 +5,7 @@
         <div class="pop-up-content">
           <div class="pop-up-text">
             <!-- gán text -->
-            {{ msg || "Thông tin trống" }}
+            {{ Messages || "Thông tin trống" }}
           </div>
         </div>
         <div class="pop-up-footer">
@@ -30,8 +30,15 @@ export default {
   computed: {
     ...mapState({
       isHideValidQuestion: (state) => state.popup.isHideValidQuestion,
-      msg: (state) => state.questions.ruleValid.msg,
+      messages: (state) => state.questions.arrayMsgValid,
     }),
+    Messages() {
+      if (Array.isArray(this.messages)) {
+        return this.messages.join(", ");
+      } else {
+        return this.messages;
+      }
+    },
   },
   methods: {
     ...mapMutations(["hidePopUp"]),

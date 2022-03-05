@@ -25,28 +25,39 @@
           <div class="margin-right-16">
             <base-combobox
               :selectorStyle="cbStyle"
-              :inputValue="gradesObject"
+              :options="grades"
+              :label="gradesLabel"
+              :propName="gradeID"
               :titleText="gradesTitle"
+              :typeCb="gradeID"
             />
           </div>
           <div class="margin-right-16">
             <base-combobox
-              :inputValue="subjectsObject"
-              :titleText="subjectsTitle"
+              :selectorStyle="cbStyle"
+              :options="subjects"
+              :label="subjectLabel"
+              :propName="subjectID"
+              :titleText="subjectTitle"
+              :typeCb="subjectID"
             />
           </div>
           <div class="margin-right-16">
             <base-combobox
-              :inputValue="topicsObject"
-              :titleText="topicsTitle"
+              :selectorStyle="cbStyle"
+              :options="topics"
+              :label="topicLabel"
+              :propName="topicID"
+              :titleText="topicTitle"
+              :typeCb="topicID"
             />
           </div>
-          <div class="margin-right-16">
+          <!-- <div class="margin-right-16">
             <base-combobox
               :inputValue="exercisesObject"
               :titleText="exercisesTitle"
             />
-          </div>
+          </div> -->
         </div>
         <div class="search">
           <base-input-search />
@@ -59,8 +70,17 @@
     <div
       class="content-footer padding-left-32 padding-right-32 justify-between"
     >
-      <div class="total-record">Tổng {{ exercises.length }} học liệu</div>
-      <div class="pagging">
+      <div class="total-record">Tổng {{ TotalRecord }} học liệu</div>
+      <div class="pagging flex">
+        <base-combobox
+          :selectorStyle="cbStyle"
+          :options="pageSizes"
+          :label="Pagelabel"
+          :propName="Pagevalue"
+          :titleText="PageTitle"
+          :PagingFirstDefault="PagingFirstDefault"
+          :typeCb="PaingtypeCb"
+        />
         <base-paging />
       </div>
     </div>
@@ -101,54 +121,87 @@ export default {
       "showDialog",
       "hideForm",
       "setTypeForm",
+      "resetQuestions",
     ]),
     /**
      * map ping dữ liệu từ state trong store vào data
      * author:NVTAM (5/2/2022)
      */
-    mapingStateData() {
-      //mapping khối lớp vào dữ liệu
-      this.gradesObject.data = this.grades.grades;
-      //mapping môn học vào dữ liệu
-      this.subjectsObject.data = this.subjects;
-      //mapping chủ đề vào dữ liệu
-      this.topicsObject.data = this.topics;
-      this.exercisesObject.data = this.exercises;
-    },
+
     showDialogOnClick() {
+      //reset lại list question
+      this.resetQuestions();
       //reset from nhập liệu
       this.resetExcercies();
-      this.showDialog(Enum.typeForm.showDetail);
-      console.log(this.isShow);
+      this.showDialog({
+        formState: Enum.typeForm.showDetail,
+        name: "Thông tin học liệu",
+      });
     },
     hideFormFormOnClick() {
       this.hideForm();
     },
   },
-  created() {
-    this.mapingStateData();
+  mounted() {
+    this.$store.dispatch("loadGrades");
+    this.$store.dispatch("loadSubjects");
   },
+
   computed: {
     ...mapState({
       isShow: (state) => state.popup.isShow,
       exercises: (state) => state.exercises,
+      grades: (state) => state.grades.grades,
+      GradeID: (state) => state.GradeID,
+      SubjectID: (state) => state.SubjectID,
+      TopicID: (state) => state.TopicID,
+      FormDetail: (state) => state.popup.FormDetail,
+      TotalRecord: (state) => state.paging.TotalRecord,
+      pageSizes: (state) => state.paging.pageSizes,
+      PageSize: (state) => state.paging.PageSize,
     }),
-    ...mapGetters(["subjects", "grades", "topics", "exercises"]),
+
+    ...mapGetters(["subjects", "topics", "exercises"]),
+  },
+  watch: {
+    //Load lại trang web khi filter giá trị
+    GradeID() {
+      this.$store.dispatch("loadExercises");
+      this.$store.dispatch("loadTopics");
+    },
+    SubjectID() {
+      this.$store.dispatch("loadExercises");
+      this.$store.dispatch("loadTopics");
+    },
+    TopicID() {
+      this.$store.dispatch("loadExercises");
+      this.$store.dispatch("loadTopics");
+    },
+    PageSize() {
+      this.$store.dispatch("loadExercises");
+    },
   },
 
   data() {
     return {
+      gradesLabel: custom.Grade.label,
+      gradesTitle: resource.Grade.GradesTitle,
+      gradeID: custom.Grade.value,
+      subjectLabel: custom.Subject.label,
+      subjectTitle: resource.Subject.SubjectsTitle,
+      subjectID: custom.Subject.value,
+      topicLabel: custom.Topic.label,
+      topicTitle: resource.Topic.TopicsTitle,
+      topicID: custom.Topic.value,
       btnSreachShareStyle: style.btnSreachShareStyle,
       cbStyle: style.cbStyle,
-      gradesObject: custom.Grade,
-      topicsObject: custom.Topic,
-      subjectsObject: custom.Subject,
-      exercisesObject: custom.Exercises,
-      topicsTitle: resource.Topic.TopicsTitle,
-      subjectsTitle: resource.Subject.SubjectsTitle,
-      gradesTitle: resource.Grade.GradesTitle,
-      exercisesTitle: resource.Exercises.ExeTitle,
       textShare: resource.textBtn.share,
+      //paging
+      Pagelabel: "Pagelabel",
+      Pagevalue: "Pagevalue",
+      PageTitle: "phân trang",
+      PagingFirstDefault: true,
+      PaingtypeCb: "Paging",
     };
   },
 };

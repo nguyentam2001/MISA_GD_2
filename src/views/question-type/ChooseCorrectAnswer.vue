@@ -12,14 +12,19 @@
           ></ckeditor>
           <div class="add-image-list">
             <div
-              v-for="(image, index) in images"
+              v-for="(image, index) in this.Question.Attachments"
               :key="index"
               class="image-attach"
             >
               <div class="del-img" @click="deleteImgOnclick(index)">
                 <i class="fas fa-times-circle"></i>
               </div>
-              <img v-if="image" :src="image" alt="" class="img" />
+              <img
+                v-if="image"
+                :src="require(`../../assets/subjects-avatar/${image}`)"
+                alt=""
+                class="img"
+              />
             </div>
             <div class="uplaod-img-btn">
               <input
@@ -59,11 +64,7 @@
           />
         </div>
         <div class="btn-with-112 margin-left-8">
-          <base-button
-            :handleOnClick="saveAnswerOnClick"
-            :payload="payLoad"
-            :text="save"
-          />
+          <base-button :handleOnClick="saveAnswerOnClick" :text="save" />
         </div>
       </div>
     </div>
@@ -74,7 +75,8 @@ import BaseButton from "../../components/BaseButton.vue";
 import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
 import BaseCardItem from "../../components/layout/question-type/BaseCardItem.vue";
 import Enum from "../../script/enum.js";
-import { mapMutations, mapState } from "vuex";
+
+import { mapActions, mapMutations, mapState } from "vuex";
 
 export default {
   components: {
@@ -90,7 +92,7 @@ export default {
       Question: (state) => state.questions.Question,
       isValid: (state) => state.questions.ruleValid.isValid,
     }),
-    ...mapState(["showQuestionType"]),
+    ...mapState(["showQuestionType", "QuestionForm", "exerciseObj"]),
   },
   methods: {
     ...mapMutations([
@@ -99,8 +101,9 @@ export default {
       "showPopUp",
       "validateAnswer",
       "addNewAnswer",
+      "findQuestionType",
     ]),
-
+    ...mapActions(["handleQuestion"]),
     /**
      * Lưu trữ dữ liệu câu trả lời
      * Author: NVTAM (13/2/2022)
@@ -109,10 +112,19 @@ export default {
       //validate
       this.validateAnswer({ name: "Question", type: this.showQuestionType });
       if (this.isValid) {
-        //Ẩn form nhập câu hỏi
-        this.hideFormQuestion();
         //Lưu dữ liệu sang trang cuối
-        this.showContentListQuestion(this.payLoad);
+        this.showContentListQuestion({
+          Type: Enum.stateFromQuestion.Choose,
+          QuestionForm: this.QuestionForm,
+        });
+        //Lưu trữ câu hỏi
+        this.handleQuestion();
+        //Chuyển đến trang danh sách các câu hỏi
+        this.$router
+          .push({
+            path: `/question-type/${this.exerciseObj.ExerciseID}/list`,
+          })
+          .catch(() => {});
       } else {
         this.showPopUp();
       }
@@ -133,25 +145,20 @@ export default {
     attachImageOnclick(e) {
       const file = e.target.files[0];
       this.imageAttach = URL.createObjectURL(file);
-      console.log(file.name);
-      this.images.push(this.imageAttach);
-      console.log(` this.images`, this.images);
+      //chọn ảnh đính kèm
+      this.Question.Attachments.push(file.name);
     },
     /**
     Xóa file ảnh đính kèm
     Author:NVTAM (7/2/2021)
      */
     deleteImgOnclick(index) {
-      this.images.splice(index, 1);
+      this.Question.Attachments.splice(index, 1);
     },
   },
 
   data() {
     return {
-      payLoad: {
-        Type: Enum.stateFromQuestion.Choose,
-      },
-
       btnStyleNormal: {
         backgroundColor: "#f1f2f7",
         border: "1px solid #a6a9be",
@@ -174,6 +181,7 @@ export default {
       Content: "Nhập câu hỏi tại đây...",
 
       editorConfig: {
+        placeholder: "Nhập câu hỏi tại đây...",
         toolbar: [
           "Bold",
           "Italic",
@@ -197,7 +205,6 @@ export default {
         "Group_52210.svg",
       ],
       imageAttach: "",
-      images: [],
     };
   },
 };

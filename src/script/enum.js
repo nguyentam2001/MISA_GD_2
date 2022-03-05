@@ -6,7 +6,13 @@ class Enum {
   static stateFromQuestion = {
     Choose: "1",
     TrueFalse: "2",
-    FillBlank: "3",
+    FillTheBlank: "3",
+    Essay: "4",
+  };
+  static stateQuestionType = {
+    Question: "1",
+    QuestionTrueFalse: "2",
+    FillTheBlank: "3",
     Essay: "4",
   };
   static typeForm = {
@@ -19,6 +25,11 @@ class Enum {
   static stateShowQuestionView = {
     QuestionContent: "1",
     QuestionList: "2",
+  };
+  static typeFormQuestion = {
+    AddQuestion: 1,
+    UpDateQuestion: 2,
+    DeleteQuestion: 3,
   };
 }
 

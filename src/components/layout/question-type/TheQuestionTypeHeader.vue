@@ -4,7 +4,16 @@
       <router-link class="hide-link" to="/">
         <div class="icon-left margin-right-16"></div>
       </router-link>
-      <div class="icon-subject margin-right-16"></div>
+      <div class="icon-subject margin-right-16">
+        <img
+          :src="
+            require(`../../../assets/subjects-avatar/${
+              exerciseObj.Avatar.fileName || 'default.png'
+            }`)
+          "
+          :alt="exerciseObj.Title"
+        />
+      </div>
       <div class="title">Nhập tên bài tập...</div>
     </div>
     <div class="header-bottom justify-between">
@@ -47,10 +56,17 @@
       </div>
       <div class="header-right algin-center">
         <div class="btn-try">
-          <base-button :styleObject="btnStyleNormal" :text="tryText" />
+          <base-button
+            :handleOnClick="tryExerciesOnclick"
+            :styleObject="btnStyleNormal"
+            :text="tryText"
+          />
         </div>
         <div class="btn-complete margin-left-16">
-          <base-button :handleOnClick="completeQuestion" :text="completeText" />
+          <base-button
+            :handleOnClick="completeQuestionOnClick"
+            :text="completeText"
+          />
         </div>
       </div>
     </div>
@@ -60,6 +76,8 @@
 import BaseButton from "../../BaseButton.vue";
 import resource from "../../../script/custom.js";
 import custom from "../../../script/custom.js";
+import Enum from "../../../script/enum.js";
+import axios from "axios";
 import { mapMutations, mapState, mapGetters } from "vuex";
 
 export default {
@@ -77,17 +95,59 @@ export default {
       "stateShowQuestionView",
     ]),
   },
-  watch: {},
+  mounted() {
+    this.$store.dispatch("loadExerciesByID", this.$route.params.id);
+    this.$store.dispatch("loadGrades");
+    this.$store.dispatch("loadSubjects");
+  },
+
   methods: {
-    ...mapMutations(["completeQuestion", "showDialog"]),
+    ...mapMutations(["showDialog"]),
     mapingStateData() {
       //mapping khối lớp vào dữ liệu
       this.gradesObject.data = this.grades.grades;
       //mapping môn học vào dữ liệu
       this.subjectsObject.data = this.subjects;
     },
+    /**
+     * Hiển thị pup up bổ sung thông tin
+     * Author: NVTAM (14/2/2022)
+     */
     showFormDetailOnClick() {
-      this.showDialog();
+      this.showDialog({
+        formState: Enum.typeForm.showUpDate,
+        name: "Bổ sung thông tin",
+      });
+    },
+    /**
+     * Hoàn thành một học liệu
+     * Author: NVTAM (14/2/2022)
+     */
+    completeQuestionOnClick() {
+      let me = this;
+      //Quay về trang chủ
+      // update trạng thái học liệu là đã soạn
+      //Nếu học liệu có ít nhất 1 câu hỏi thì chuyển thành trạng thái đã soạn
+      //Nếu không có câu hỏi nào thì là trạng thái đạng soạn
+      this.$store
+        .dispatch("loadExerciesByID", this.$route.params.id)
+        .then(() => {
+          axios
+            .put(
+              `https://localhost:7291/api/v1/Exercises/status?id=${this.exerciseObj.ExerciseID}`
+            )
+            .then(() => {
+              me.$router.push("/");
+            })
+            .catch(() => {});
+        });
+    },
+    tryExerciesOnclick() {
+      this.$router
+        .push({
+          path: `/theme/${this.exerciseObj.ExerciseID}`,
+        })
+        .catch(() => {});
     },
   },
   data() {
@@ -120,16 +180,20 @@ export default {
   padding: 12px 12px 12px 24px;
   .header-top {
     .icon-left {
-      background-image: url("../../../assets/icons/ic_Down.svg");
       width: 18px;
       height: 17px;
     }
     .icon-subject {
-      background-image: url("../../../assets/icons/img_eng.svg");
       border-radius: 50%;
       width: 40px;
       height: 40px;
+      justify-content: center;
+      display: flex;
       overflow: hidden;
+      img {
+        width: 84px;
+        height: 40px;
+      }
     }
     .title {
       font-size: 20px;

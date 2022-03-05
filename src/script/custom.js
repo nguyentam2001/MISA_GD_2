@@ -2,7 +2,7 @@ class Custom {
   static Topic = {
     data: [],
     label: "TopicName",
-    value: "TopicId",
+    value: "TopicID",
   };
   static Subject = {
     data: [],

@@ -1,10 +1,19 @@
 <template>
   <div class="add-image-list">
-    <div v-for="(image, index) in images" :key="index" class="image-attach">
+    <div
+      v-for="(image, index) in this.question.Attachments"
+      :key="index"
+      class="image-attach"
+    >
       <div class="del-img" @click="deleteImgOnclick(index)">
         <i class="fas fa-times-circle"></i>
       </div>
-      <img v-if="image" :src="image" alt="" class="img" />
+      <img
+        v-if="image"
+        :src="require(`../assets/subjects-avatar/${image}`)"
+        alt=""
+        class="img"
+      />
     </div>
     <div class="uplaod-img-btn">
       <input
@@ -22,6 +31,9 @@
 </template>
 <script>
 export default {
+  props: {
+    question: Object,
+  },
   methods: {
     /**
     Tải file ảnh đính kèm
@@ -30,16 +42,15 @@ export default {
     attachImageOnclick(e) {
       const file = e.target.files[0];
       this.imageAttach = URL.createObjectURL(file);
-      console.log(file.name);
-      this.images.push(this.imageAttach);
-      console.log(` this.images`, this.images);
+      this.images.push(file.name);
+      this.question.Attachments = this.images;
     },
     /**
     Xóa file ảnh đính kèm
     Author:NVTAM (7/2/2021)
      */
     deleteImgOnclick(index) {
-      this.images.splice(index, 1);
+      this.question.Attachments.splice(index, 1);
     },
   },
   data() {
